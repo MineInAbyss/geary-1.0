@@ -6,20 +6,25 @@ import com.badlogic.ashley.core.Component;
  * Creates an explosion effect at the target.
  */
 public class Explosion implements Component {
+  private final float power;
+  private final boolean setFire;
+  private final boolean breakBlocks;
 
-  public enum Size {
-    SMALL,
-    MEDIUM,
-    LARGE
+  public Explosion(float power, boolean setFire, boolean breakBlocks) {
+    this.power = power;
+    this.setFire = setFire;
+    this.breakBlocks = breakBlocks;
   }
 
-  private Size size;
-
-  public Explosion(Size size) {
-    this.size = size;
+  public float getPower() {
+    return power;
   }
 
-  public Size getSize() {
-    return size;
+  public boolean isSetFire() {
+    return setFire;
+  }
+
+  public boolean isBreakBlocks() {
+    return breakBlocks;
   }
 }

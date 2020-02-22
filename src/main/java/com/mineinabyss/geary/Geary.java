@@ -10,6 +10,7 @@ import com.mineinabyss.geary.ecs.EntityMapper;
 import com.mineinabyss.geary.ecs.components.equipment.Equipped;
 import com.mineinabyss.geary.ecs.systems.DegredationSystem;
 import com.mineinabyss.geary.ecs.systems.EntityRemovalSystem;
+import com.mineinabyss.geary.ecs.systems.ExplosionSystem;
 import com.mineinabyss.geary.ecs.systems.ProjectileCollisionSystem;
 import com.mineinabyss.geary.ecs.systems.ProjectileLaunchingSubSystem;
 import com.mineinabyss.geary.ecs.systems.movement.EntityPullingSystem;
@@ -52,6 +53,7 @@ public final class Geary extends JavaPlugin implements GearyService {
     engine.addSystem(new GrapplingHookDisconnectingSystem(projectileMapper, mapper));
     engine.addSystem(new ProjectileCollisionSystem());
     engine.addSystem(new EntityPullingSystem());
+    engine.addSystem(new ExplosionSystem());
     engine.addSystem(new RopeDisplaySystem());
     engine.addSystem(new DegredationSystem());
     engine.addSystem(new ItemDisplaySystem(itemUtil));
