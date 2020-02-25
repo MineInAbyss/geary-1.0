@@ -12,6 +12,8 @@ public class DegredationSystem extends IteratingSystem {
 
   private ComponentMapper<Durability> durabilityComponentMapper = ComponentMapper
       .getFor(Durability.class);
+  private ComponentMapper<Degrading> degradingComponentMapper = ComponentMapper
+      .getFor(Degrading.class);
 
   public DegredationSystem() {
     super(Family.all(Durability.class, Degrading.class).get());
@@ -20,7 +22,13 @@ public class DegredationSystem extends IteratingSystem {
   @Override
   protected void processEntity(Entity entity, float deltaTime) {
     Durability durability = durabilityComponentMapper.get(entity);
-    durability.setCurrentUses(durability.getCurrentUses() - 1);
+    int consumed = durability.getConsumeOnUse();
+
+    if (degradingComponentMapper.has(entity)) {
+      consumed += degradingComponentMapper.get(entity).getAmount();
+    }
+
+    durability.setCurrentUses(durability.getCurrentUses() - consumed);
 
     if (durability.getCurrentUses() <= 0) {
       entity.add(new Remove());

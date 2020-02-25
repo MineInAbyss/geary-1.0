@@ -36,6 +36,7 @@ public final class Geary extends JavaPlugin implements GearyService {
   private ItemUtil itemUtil;
   private EntityMapper mapper;
   private Engine engine;
+  private EntityMapperSaver entityMapperSaver;
 
   @Override
   public void onEnable() {
@@ -46,6 +47,7 @@ public final class Geary extends JavaPlugin implements GearyService {
     ProjectileLaunchingSubSystem pslss = new ProjectileLaunchingSubSystem(projectileMapper,
         mapper);
     itemUtil = new ItemUtil(this, mapper, engine);
+    entityMapperSaver = new EntityMapperSaver(mapper);
 
     engine.addEntityListener(mapper);
 
@@ -87,7 +89,7 @@ public final class Geary extends JavaPlugin implements GearyService {
   private void dumpConfig() throws IOException {
     File data = getConfigFile();
 
-    String json = new EntityMapperSaver(mapper).saveEntityMapper();
+    String json = entityMapperSaver.saveEntityMapper();
 
     FileWriter writer = new FileWriter(data);
     writer.write(json);
