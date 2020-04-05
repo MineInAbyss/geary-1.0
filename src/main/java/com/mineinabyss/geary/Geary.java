@@ -1,149 +1,103 @@
 package com.mineinabyss.geary;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
-import com.badlogic.ashley.core.Engine;
-import com.badlogic.ashley.core.EntitySystem;
 import com.mineinabyss.geary.core.ActionListener;
-import com.mineinabyss.geary.core.ItemUtil;
-import com.mineinabyss.geary.core.ItemUtil.EntityInitializer;
-import com.mineinabyss.geary.core.ProjectileToEntityMapper;
-import com.mineinabyss.geary.ecs.EntityToUUIDMapper;
-import com.mineinabyss.geary.ecs.components.equipment.Equipped;
-import com.mineinabyss.geary.ecs.systems.DegredationSystem;
-import com.mineinabyss.geary.ecs.systems.EntityRemovalSystem;
-import com.mineinabyss.geary.ecs.systems.ProjectileCollisionSystem;
-import com.mineinabyss.geary.ecs.systems.ProjectileLaunchingSubSystem;
-import com.mineinabyss.geary.ecs.systems.movement.EntityPullingSystem;
-import com.mineinabyss.geary.ecs.systems.rendering.ItemDisplaySystem;
-import com.mineinabyss.geary.ecs.systems.rendering.RopeDisplaySystem;
-import com.mineinabyss.geary.ecs.systems.tools.GrapplingHookDisconnectingSystem;
-import com.mineinabyss.geary.ecs.systems.tools.GrapplingHookExtendingSystem;
-import com.mineinabyss.geary.state.PersistentEntityReader;
-import com.mineinabyss.geary.state.PersistentEntityWriter;
-import com.mineinabyss.geary.state.RecipeReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
+import com.mineinabyss.geary.core.nbt.GearyEntityToPersistentDataConverter;
+import com.mineinabyss.geary.ecs.component.Component;
+import com.mineinabyss.geary.ecs.engines.SimpleGearyEngine;
+import com.mineinabyss.geary.ecs.entity.GearyEntity;
+import com.mineinabyss.geary.ecs.entity.GearyEntityFactory;
+import com.mineinabyss.geary.ecs.system.GearySystem;
+import com.mineinabyss.geary.ecs.system.systems.DeactivationSystem;
+import com.mineinabyss.geary.ecs.system.systems.DegredationSystem;
+import com.mineinabyss.geary.ecs.system.systems.EntityRemovalSystem;
+import com.mineinabyss.geary.ecs.system.systems.ProjectileCollisionSystem;
+import com.mineinabyss.geary.ecs.system.systems.ProjectileLaunchingSubSystem;
+import com.mineinabyss.geary.ecs.system.systems.movement.EntityPullingSystem;
+import com.mineinabyss.geary.ecs.system.systems.rendering.ItemDisplaySystem;
+import com.mineinabyss.geary.ecs.system.systems.rendering.RopeDisplaySystem;
+import com.mineinabyss.geary.ecs.system.systems.tools.GrapplingHookDisconnectingSystem;
+import com.mineinabyss.geary.ecs.system.systems.tools.GrapplingHookExtendingSystem;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Geary extends JavaPlugin implements GearyService {
 
-  private ItemUtil itemUtil;
-  private EntityToUUIDMapper mapper;
-  private Engine engine;
-  private static final String PERSISTENCE_FILE_NAME = "data.json";
-  private static final String RECIPES_FILE_NAME = "recipes.json";
-  private static final String BACKUP_SUFFIX = ".backup";
+  private GearyEntityToPersistentDataConverter converter;
+  private GearyEntityFactory gearyEntityFactory;
+  private SimpleGearyEngine gearyEngine;
 
   @Override
   public void onEnable() {
-    // Plugin startup logic
-    mapper = new EntityToUUIDMapper();
-    engine = new Engine();
-    ProjectileToEntityMapper projectileToEntityMapper = new ProjectileToEntityMapper();
-    ProjectileLaunchingSubSystem pslss = new ProjectileLaunchingSubSystem(projectileToEntityMapper,
-        mapper);
-    itemUtil = new ItemUtil(this, mapper, engine);
+    NamespacedKey componentsKey = new NamespacedKey(this, "components");
+    NamespacedKey componentsDataKey = new NamespacedKey(this, "components-data");
+    NamespacedKey componentKeyListKey = new NamespacedKey(this, "component-keys");
+    NamespacedKey uuidKey = new NamespacedKey(this, "entity-uuid");
 
-    engine.addEntityListener(mapper);
+    gearyEntityFactory = new GearyEntityFactory();
+    converter = new GearyEntityToPersistentDataConverter(
+        componentsKey,
+        componentsDataKey, uuidKey,
+        componentKeyListKey, s -> new NamespacedKey(this, s),
+        gearyEntityFactory, getLogger());
 
-    engine.addSystem(new GrapplingHookExtendingSystem(pslss, mapper));
-    engine.addSystem(new GrapplingHookDisconnectingSystem(projectileToEntityMapper, mapper));
-    engine.addSystem(new ProjectileCollisionSystem());
-    engine.addSystem(new EntityPullingSystem());
-    engine.addSystem(new RopeDisplaySystem());
-    engine.addSystem(new DegredationSystem());
-    engine.addSystem(new ItemDisplaySystem(itemUtil));
-    engine.addSystem(new EntityRemovalSystem());
+    gearyEngine = new SimpleGearyEngine(componentsKey, converter, getLogger());
 
-    try {
-      new PersistentEntityReader(mapper, engine)
-          .loadEntityMapper(new FileReader(getConfigFileByName(PERSISTENCE_FILE_NAME)));
-    } catch (FileNotFoundException e) {
-      getLogger().info(String
-          .format("Missing Persistence File, %s, no entities loaded.", PERSISTENCE_FILE_NAME));
-    }
+    gearyEngine.addSystem(
+        new GrapplingHookExtendingSystem(new ProjectileLaunchingSubSystem(gearyEntityFactory)),
+        this);
+    gearyEngine.addSystem(new GrapplingHookDisconnectingSystem(), this);
+    gearyEngine.addSystem(new ProjectileCollisionSystem(), this);
+    gearyEngine.addSystem(new EntityPullingSystem(), this);
+    gearyEngine.addSystem(new RopeDisplaySystem(), this);
+    gearyEngine.addSystem(new DegredationSystem(), this);
+    gearyEngine.addSystem(new ItemDisplaySystem(), this);
+    gearyEngine.addCleanupSystem(new EntityRemovalSystem());
+    gearyEngine.addCleanupSystem(new DeactivationSystem());
 
-    try {
-      Reader reader = new FileReader(getConfigFileByName(RECIPES_FILE_NAME));
-      new RecipeReader(this).readRecipes(reader).forEach(Bukkit::addRecipe);
-    } catch (FileNotFoundException e) {
-      getLogger().info(String
-          .format("Missing Recipes File, %s, no entities loaded.", RECIPES_FILE_NAME));
-    }
+    Bukkit.getScheduler()
+        .scheduleSyncRepeatingTask(this, gearyEngine::update, 1, 1);
 
     getServer().getPluginManager()
-        .registerEvents(new ActionListener(projectileToEntityMapper, itemUtil), this);
-    getServer().getScheduler().scheduleSyncRepeatingTask(this, this::doEngineUpdates, 0, 1);
+        .registerEvents(new ActionListener(componentsKey, converter, gearyEntityFactory), this);
+
+    getServer().getPluginManager()
+        .registerEvents(new PluginDisableListener((SimpleGearyEngine) gearyEngine), this);
+
     getServer().getServicesManager()
         .register(GearyService.class, this, this, ServicePriority.Highest);
   }
 
   @Override
   public void onDisable() {
-    try {
-      dumpConfig();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void dumpConfig() throws IOException {
-    File data = getConfigFileByName(PERSISTENCE_FILE_NAME);
-
-    Files.copy(data.toPath(),
-        getConfigFileByName(PERSISTENCE_FILE_NAME + BACKUP_SUFFIX).toPath(),
-        REPLACE_EXISTING);
-
-    String json = new PersistentEntityWriter(mapper).saveEntityMapper();
-
-    FileWriter writer = new FileWriter(data);
-    writer.write(json);
-    writer.close();
-  }
-
-  private File getConfigFileByName(String filename) {
-    if (!getDataFolder().exists()) {
-      getDataFolder().mkdirs();
-    }
-    return new File(getDataFolder(), filename);
-  }
-
-  private void doEngineUpdates() {
-
-    getServer().getOnlinePlayers().forEach(player -> {
-      ItemStack itemStack = player.getInventory().getItemInMainHand();
-
-      itemUtil.removeOrGet(itemStack, player.getInventory())
-          .ifPresent(entity -> entity.add(new Equipped(player)));
-    });
-
-    engine.update(1);
   }
 
   @Override
-  public ShapedRecipe createRecipe(NamespacedKey key, EntityInitializer entityInitializer,
-      ItemStack itemStack) {
-    return new GearyRecipe(key, itemStack, this, entityInitializer);
+  public void attachToItemStack(Set<Component> components, ItemStack itemStack) {
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(itemStack, UUID.randomUUID(), null);
+    components.forEach(gearyEntity::addComponent);
+
+    converter.applyToPersistentDataHolder(gearyEntity);
+
+    itemStack.setItemMeta((ItemMeta) gearyEntity.getDataHolder());
   }
 
   @Override
-  public void attachToItemStack(EntityInitializer entityInitializer, ItemStack itemStack) {
-    itemUtil.attachToItemStack(entityInitializer, itemStack);
+  public void attachToEntity(Set<Component> components, Entity entity) {
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(entity, UUID.randomUUID());
+    components.forEach(gearyEntity::addComponent);
+    converter.applyToPersistentDataHolder(gearyEntity);
   }
 
   @Override
-  public void addSystem(EntitySystem entitySystem) {
-    engine.addSystem(entitySystem);
+  public void addSystem(GearySystem entitySystem, Plugin plugin) {
+    gearyEngine.addSystem(entitySystem, plugin);
   }
 }

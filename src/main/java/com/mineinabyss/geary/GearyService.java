@@ -1,10 +1,11 @@
 package com.mineinabyss.geary;
 
-import com.badlogic.ashley.core.EntitySystem;
-import com.mineinabyss.geary.core.ItemUtil.EntityInitializer;
-import org.bukkit.NamespacedKey;
+import com.mineinabyss.geary.ecs.component.Component;
+import com.mineinabyss.geary.ecs.system.GearySystem;
+import java.util.Set;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.plugin.Plugin;
 
 /**
  * Service interface for {@link Geary}, exposed to other plugins.
@@ -12,26 +13,26 @@ import org.bukkit.inventory.ShapedRecipe;
 public interface GearyService {
 
   /**
-   * Creates a ShapedRecipe with an associated entity initializer. The namespaced key should be
-   * provided by the calling plugin.
+   * Associates the provided components with the item stack.
    * <p>
-   * The {@param entityInitializer} will be invoked once per item successfully crafted in the trade
-   * window.
+   * Note that the components are associated by updating the {@link org.bukkit.inventory.meta.ItemMeta}
+   * of the item stack.
+   *
+   * @param components Set of components to attach.
+   * @param itemStack  The itemstack to attach to.
    */
-  ShapedRecipe createRecipe(NamespacedKey key, EntityInitializer entityInitializer,
-      ItemStack itemStack);
+  void attachToItemStack(Set<Component> components, ItemStack itemStack);
 
   /**
-   * Invokes {@param entityInitializer} and associates the resulting ECS entity with the provided
-   * {@param itemStack}.
-   * <p>
-   * Note that this method alters the metadata of the item stack, and that removing the item stack
-   * will result in a persistent entity with no associated item.
+   * Associates the provided components with the entity.
+   *
+   * @param components Set of components to attach.
+   * @param entity     The entity to attach to.
    */
-  void attachToItemStack(EntityInitializer entityInitializer, ItemStack itemStack);
+  void attachToEntity(Set<Component> components, Entity entity);
 
   /**
-   * Adds an additional system for processing ECS entities.
+   * Adds an additional system for processing geary entities.
    */
-  void addSystem(EntitySystem entitySystem);
+  void addSystem(GearySystem entitySystem, Plugin plugin);
 }

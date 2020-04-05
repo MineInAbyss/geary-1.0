@@ -1,4 +1,4 @@
 name: Geary
 version: @version@
 main: com.mineinabyss.geary.Geary
-api-version: 1.15
+api-version: "1.15"
