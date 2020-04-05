@@ -18,7 +18,7 @@ group = pluginGroup
 version = pluginVersion
 
 if (project.hasProperty("buildNo")) {
-    version += "." + buildNo
+    version += "-" + buildNo
 }
 
 sourceCompatibility = '1.8'
