@@ -9,7 +9,6 @@ import com.mineinabyss.geary.ecs.component.components.equipment.Degrading;
 import com.mineinabyss.geary.ecs.component.components.equipment.Durability;
 import com.mineinabyss.geary.ecs.entity.GearyEntity;
 import com.mineinabyss.geary.ecs.entity.GearyEntityFactory;
-import java.util.UUID;
 import org.bukkit.entity.Entity;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +30,7 @@ public class DegredationSystemTest {
 
   @Test
   public void degradeEntity() {
-    GearyEntity gearyEntity = gearyEntityFactory
-        .createEntity(mock(Entity.class), UUID.randomUUID());
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(mock(Entity.class));
     Durability durability = new Durability(3);
     gearyEntity.addComponent(durability);
     gearyEntity.addComponent(new Degrading());
@@ -46,8 +44,7 @@ public class DegredationSystemTest {
 
   @Test
   public void markEntityForRemoval() {
-    GearyEntity gearyEntity = gearyEntityFactory
-        .createEntity(mock(Entity.class), UUID.randomUUID());
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(mock(Entity.class));
     Durability durability = new Durability(1);
     gearyEntity.addComponent(durability);
     gearyEntity.addComponent(new Degrading());

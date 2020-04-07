@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.mineinabyss.geary.ecs.component.components.ProjectileHitComponents;
 import com.mineinabyss.geary.ecs.entity.GearyEntity;
 import com.mineinabyss.geary.ecs.entity.GearyEntityFactory;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftSnowball;
@@ -38,7 +37,7 @@ public class ProjectileLaunchingSubSystem {
 
     entitysnowball.setItem(CraftItemStack.asNMSCopy(itemStack));
 
-    GearyEntity projectileEntity = gearyEntityFactory.createEntity(projectile, UUID.randomUUID());
+    GearyEntity projectileEntity = gearyEntityFactory.createEntity(projectile);
 
     projectileEntity.addComponent(new ProjectileHitComponents(ImmutableSet::of));
 

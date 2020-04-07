@@ -9,7 +9,6 @@ import com.mineinabyss.geary.ecs.component.Component;
 import com.mineinabyss.geary.ecs.component.components.ProjectileHitComponents;
 import com.mineinabyss.geary.ecs.entity.GearyEntity;
 import com.mineinabyss.geary.ecs.entity.GearyEntityFactory;
-import java.util.UUID;
 import org.bukkit.entity.Entity;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +30,7 @@ public class ProjectileHitComponentsCollisionSystemTest {
 
   @Test
   public void applyCollisionComponents() {
-    GearyEntity gearyEntity = gearyEntityFactory
-        .createEntity(mock(Entity.class), UUID.randomUUID());
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(mock(Entity.class));
     gearyEntity.addComponent(
         new ProjectileHitComponents(
             () -> ImmutableSet.of(new TestComponent1(), new TestComponent2())));

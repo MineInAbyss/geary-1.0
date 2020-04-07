@@ -8,11 +8,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mineinabyss.geary.FakePlayer;
+import com.mineinabyss.geary.NamespacedKeyCreator;
 import com.mineinabyss.geary.core.nbt.GearyEntityToPersistentDataConverter;
 import com.mineinabyss.geary.ecs.component.components.control.Activated;
 import com.mineinabyss.geary.ecs.entity.GearyEntity;
 import com.mineinabyss.geary.ecs.entity.GearyEntityFactory;
-import java.util.UUID;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -22,27 +22,22 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ActionListenerTest {
 
   private ActionListener actionListener;
-  private Plugin plugin;
   private GearyEntityFactory gearyEntityFactory;
   private GearyEntityToPersistentDataConverter converter;
   private NamespacedKey componentKey;
 
   @Before
   public void setUp() throws Exception {
-    plugin = mock(Plugin.class);
-    when(plugin.getName()).thenReturn("geary");
-
     gearyEntityFactory = new GearyEntityFactory();
     converter = mock(GearyEntityToPersistentDataConverter.class);
 
-    componentKey = createKey("component-key");
+    componentKey = NamespacedKeyCreator.createKey("geary", "component-key");
     actionListener = new ActionListener(componentKey, converter, gearyEntityFactory);
   }
 
@@ -56,7 +51,7 @@ public class ActionListenerTest {
     when(persistentDataContainer.has(componentKey, PersistentDataType.TAG_CONTAINER))
         .thenReturn(true);
     when(itemMeta.getPersistentDataContainer()).thenReturn(persistentDataContainer);
-    GearyEntity gearyEntity = gearyEntityFactory.createEntity(itemStack, UUID.randomUUID(), player);
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(itemStack, player);
     when(converter.readFromItemStack(itemStack, player)).thenReturn(gearyEntity);
 
     actionListener
@@ -83,9 +78,4 @@ public class ActionListenerTest {
 
     verify(persistentDataContainer, never()).set(any(), any(), any());
   }
-
-  private NamespacedKey createKey(String key) {
-    return new NamespacedKey(plugin, key);
-  }
-
 }

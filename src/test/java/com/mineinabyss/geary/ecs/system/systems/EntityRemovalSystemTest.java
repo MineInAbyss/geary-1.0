@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import com.mineinabyss.geary.ecs.GearyEngine;
 import com.mineinabyss.geary.ecs.entity.GearyEntity;
 import com.mineinabyss.geary.ecs.entity.GearyEntityFactory;
-import java.util.UUID;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -31,8 +30,7 @@ public class EntityRemovalSystemTest {
   @Test
   public void removeItemStack() {
     ItemStack itemStack = mock(ItemStack.class);
-    GearyEntity gearyEntity = gearyEntityFactory.createEntity(itemStack, UUID.randomUUID(), mock(
-        Player.class));
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(itemStack, mock(Player.class));
 
     entityRemovalSystem.update(gearyEntity);
 
@@ -42,7 +40,7 @@ public class EntityRemovalSystemTest {
   @Test
   public void removeEntity() {
     Entity entity = mock(Entity.class);
-    GearyEntity gearyEntity = gearyEntityFactory.createEntity(entity, UUID.randomUUID());
+    GearyEntity gearyEntity = gearyEntityFactory.createEntity(entity);
 
     entityRemovalSystem.update(gearyEntity);
 

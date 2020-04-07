@@ -51,6 +51,11 @@ public interface GearyEntity {
   UUID getUUID();
 
   /**
+   * Gets the entity version this entity was created using.
+   */
+  long getVersion();
+
+  /**
    * Gets the Player this entity is held by, if it exists.
    */
   Optional<Player> getHoldingPlayer();

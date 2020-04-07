@@ -1,6 +1,5 @@
 package com.mineinabyss.geary.ecs.entity;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.mineinabyss.geary.core.nbt.ComponentArrayTagType.PlaceholderComponent;
 import com.mineinabyss.geary.ecs.component.Component;
@@ -16,39 +15,51 @@ import org.bukkit.persistence.PersistentDataHolder;
 
 public class GearyEntityFactory {
 
-  public GearyEntity createEntity(Entity entity, UUID uuid) {
-    return new GearyEntityImpl(entity, uuid);
+  /**
+   * Current entity version for geary. Increment on breaking change and make sure to create a new
+   * {@link com.mineinabyss.geary.ecs.entity.migration.GearyEntityMigration} that upgrades old
+   * entities.
+   */
+  public static final long ENTITY_VERSION = 1;
+
+  public GearyEntity createEntity(Entity entity) {
+    return new GearyEntityImpl(entity, ENTITY_VERSION, UUID.randomUUID());
   }
 
-  public GearyEntity createEntity(ItemStack itemStack, UUID uuid, Player player) {
-    return new GearyEntityImpl(itemStack, uuid, player);
+  public GearyEntity createEntity(ItemStack itemStack, Player player) {
+    return new GearyEntityImpl(itemStack, player, ENTITY_VERSION, UUID.randomUUID());
   }
 
-  private static class GearyEntityImpl implements GearyEntity {
+  public GearyEntity createEntity(Entity entity, long version, UUID uuid) {
+    return new GearyEntityImpl(entity, version, uuid);
+  }
+
+  public GearyEntity createEntity(ItemStack itemStack, Player player, long version, UUID uuid) {
+    return new GearyEntityImpl(itemStack, player, version, uuid);
+  }
+
+  public static class GearyEntityImpl implements GearyEntity {
 
     private ItemStack itemStack = null;
     private PersistentDataHolder persistentDataHolder;
+    private long version;
     private Map<Class<? extends Component>, Component> components;
     private Map<String, PlaceholderComponent> placeholders;
     private UUID uuid;
     private Player player;
 
-    private GearyEntityImpl(Entity entity, UUID uuid) {
-      this((PersistentDataHolder) entity, uuid);
-    }
-
-    private GearyEntityImpl(ItemStack itemStack, UUID uuid, Player player) {
-      this(itemStack.getItemMeta(), uuid);
+    private GearyEntityImpl(ItemStack itemStack, Player player, long version, UUID uuid) {
+      this(itemStack.getItemMeta(), version, uuid);
       this.itemStack = itemStack;
       this.player = player;
     }
 
-    private GearyEntityImpl(PersistentDataHolder persistentDataHolder, UUID uuid) {
-      Preconditions.checkNotNull(uuid);
+    private GearyEntityImpl(PersistentDataHolder persistentDataHolder, long version, UUID uuid) {
       this.persistentDataHolder = persistentDataHolder;
+      this.version = version;
+      this.uuid = uuid;
       this.components = new HashMap<>();
       this.placeholders = new HashMap<>();
-      this.uuid = uuid;
     }
 
     @Override
@@ -93,6 +104,11 @@ public class GearyEntityFactory {
     @Override
     public UUID getUUID() {
       return uuid;
+    }
+
+    @Override
+    public long getVersion() {
+      return version;
     }
 
     @Override

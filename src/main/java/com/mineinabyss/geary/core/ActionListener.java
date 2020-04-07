@@ -74,7 +74,8 @@ public class ActionListener implements Listener {
                           projectileHitEvent.getHitBlock().getBlockData());
             });
 
-        GearyEntity newEntity = gearyEntityFactory.createEntity(effectCloud, gearyEntity.getUUID());
+        GearyEntity newEntity = gearyEntityFactory
+            .createEntity(effectCloud, gearyEntity.getVersion(), gearyEntity.getUUID());
         gearyEntity.getComponents().forEach(newEntity::addComponent);
         gearyEntity = newEntity;
       }
