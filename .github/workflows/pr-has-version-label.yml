@@ -1,0 +1,29 @@
+name: Check PR Has Version Label
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled, unlabeled, synchronize]
+    paths-ignore:
+      - .gitignore
+      - README.md
+      - geary.iml
+      - .github/workflows/**
+
+jobs:
+  check-has-version-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find change type
+        id: bump
+        uses: zwaldowski/match-label-action@v1
+        with:
+          allowed: major,minor,patch
+      - uses: zwaldowski/semver-release-action@v1
+        id: next_version
+        with:
+          bump: ${{ steps.bump.outputs.match }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+          prefix: v
+      - name: Show Version
+        run: echo Next version at time of running this action will be ${{ steps.next_version.outputs.version }}

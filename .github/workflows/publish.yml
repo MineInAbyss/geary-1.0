@@ -1,0 +1,61 @@
+name: Publish Release
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - .gitignore
+      - README.md
+      - geary.iml
+      - .github/workflows/**
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build NMS
+        uses: derongan/nmsaction@v1
+        with:
+          rev: 1.15.1
+      - name: Install nms into m2
+        run: mkdir -p $HOME/.m2/repository && cp -a nms-build/.m2/repository/. $HOME/.m2/repository
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run tests
+        run: ./gradlew test
+      - name: Find change type
+        id: bump
+        uses: zwaldowski/match-label-action@v1
+        with:
+          allowed: major,minor,patch
+      - uses: zwaldowski/semver-release-action@v1
+        id: next_version
+        with:
+          bump: ${{ steps.bump.outputs.match }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prefix: v
+      - name: Build output jars
+        run: ./gradlew -Pversion=${{ steps.next_version.outputs.version }} jar shadowJar
+      - name: Upload artifact
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: package
+          path: build/libs
+      - name: Publish to GitHub Package Repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew -Pversion=${{ steps.next_version.outputs.version }} publish
+      - name: Create GitHub Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            build/libs/*.jar
+
