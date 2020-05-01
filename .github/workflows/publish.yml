@@ -11,9 +11,9 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     if: >-
-      contains(github.event.issue.labels.*.name, 'major') ||
-      contains(github.event.issue.labels.*.name, 'minor') ||
-      contains(github.event.issue.labels.*.name, 'patch')
+      contains(github.event.pull_request.labels.*.name, 'major') ||
+      contains(github.event.pull_request.labels.*.name, 'minor') ||
+      contains(github.event.pull_request.labels.*.name, 'patch')
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 1.8
