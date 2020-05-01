@@ -6,15 +6,14 @@ on:
       - master
     types:
       - closed
-    paths-ignore:
-      - .gitignore
-      - README.md
-      - geary.iml
-      - .github/workflows/**
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    if: >-
+      contains(github.event.issue.labels.*.name, 'major') ||
+      contains(github.event.issue.labels.*.name, 'minor') ||
+      contains(github.event.issue.labels.*.name, 'patch')
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 1.8

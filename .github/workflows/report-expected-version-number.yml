@@ -2,14 +2,14 @@ name: Report next version
 
 on:
   pull_request:
-    types: [opened, reopened, labeled, unlabeled, synchronize]
+    types: [opened, reopened, labeled, unlabeled]
 
 jobs:
   check-has-version-label:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'major') ||
-      contains(github.event.pull_request.labels.*.name, 'minor') ||
-      contains(github.event.pull_request.labels.*.name, 'patch')
+    if: contains(github.event.issue.labels.*.name, 'major') ||
+      contains(github.event.issue.labels.*.name, 'minor') ||
+      contains(github.event.issue.labels.*.name, 'patch')
     steps:
       - name: Find change type
         id: bump
