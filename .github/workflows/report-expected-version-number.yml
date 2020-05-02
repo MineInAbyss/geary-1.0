@@ -25,3 +25,5 @@ jobs:
           prefix: v
       - name: Show Version
         run: echo Next version at time of running this action will be ${{ steps.next_version.outputs.version }}
+      - name: Show Tag
+        run: echo Tag will be ${{steps.next_version.outputs.version_tag}}
