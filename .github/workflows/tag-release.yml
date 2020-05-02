@@ -11,9 +11,9 @@ jobs:
   tag_release_version:
     runs-on: ubuntu-latest
     if: >-
-      contains(github.event.pull_request.labels.*.name, 'major') ||
+      (contains(github.event.pull_request.labels.*.name, 'major') ||
       contains(github.event.pull_request.labels.*.name, 'minor') ||
-      contains(github.event.pull_request.labels.*.name, 'patch')
+      contains(github.event.pull_request.labels.*.name, 'patch'))
       && github.event.pull_request.merged == 'true'
     steps:
       - name: Find change type
