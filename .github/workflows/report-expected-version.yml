@@ -5,7 +5,7 @@ on:
     types: [opened, reopened, labeled, unlabeled, synchronize]
 
 jobs:
-  check-has-version-label:
+  report-next-version:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'major') ||
       contains(github.event.pull_request.labels.*.name, 'minor') ||
