@@ -10,11 +10,11 @@ on:
 jobs:
   tag_release_version:
     runs-on: ubuntu-latest
-    #    if: >-
-    #      (contains(github.event.pull_request.labels.*.name, 'major') ||
-    #      contains(github.event.pull_request.labels.*.name, 'minor') ||
-    #      contains(github.event.pull_request.labels.*.name, 'patch'))
-    #      && github.event.pull_request.merged == true
+    if: >-
+      (contains(github.event.pull_request.labels.*.name, 'major') ||
+      contains(github.event.pull_request.labels.*.name, 'minor') ||
+      contains(github.event.pull_request.labels.*.name, 'patch'))
+      && github.event.pull_request.merged == true
     steps:
       - run: echo ${{ toJSON(github.event.pull_request) }}
       - name: Find change type
