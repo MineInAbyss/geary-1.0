@@ -20,7 +20,7 @@ jobs:
         uses: zwaldowski/match-label-action@v1
         with:
           allowed: major,minor,patch
-      - uses: zwaldowski/semver-release-action@v1
+      - uses: zwaldowski/semver-release-action@v2
         id: next_version
         with:
           bump: ${{ steps.bump.outputs.match }}
