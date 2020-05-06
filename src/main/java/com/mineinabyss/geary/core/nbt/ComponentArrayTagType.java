@@ -19,11 +19,11 @@ public class ComponentArrayTagType implements
     PersistentDataType<PersistentDataContainer, Component[]> {
 
   private static final ClassNameArrayType CLASS_NAME_ARRAY_TYPE = new ClassNameArrayType();
-  private NamespacedKey componentsDataKey;
-  private NamespacedKey componentKeyListKey;
-  private NamespacedKey componentsKey;
-  private Function<String, NamespacedKey> keyCreator;
-  private Logger logger;
+  private final NamespacedKey componentsDataKey;
+  private final NamespacedKey componentKeyListKey;
+  private final NamespacedKey componentsKey;
+  private final Function<String, NamespacedKey> keyCreator;
+  private final Logger logger;
 
   public ComponentArrayTagType(NamespacedKey componentsDataKey, NamespacedKey componentKeyListKey,
       NamespacedKey componentsKey,

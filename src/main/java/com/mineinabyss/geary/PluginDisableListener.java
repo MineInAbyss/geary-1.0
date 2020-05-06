@@ -7,7 +7,7 @@ import org.bukkit.event.server.PluginDisableEvent;
 
 public class PluginDisableListener implements Listener {
 
-  private SimpleGearyEngine gearyEngine;
+  private final SimpleGearyEngine gearyEngine;
 
   public PluginDisableListener(SimpleGearyEngine gearyEngine) {
     this.gearyEngine = gearyEngine;

@@ -32,9 +32,9 @@ public class ComponentTagType implements
       .put(Long.class, PersistentDataType.LONG_ARRAY)
       .build();
 
-  private Class<? extends Component> clazz;
-  private Function<String, NamespacedKey> keyCreator;
-  private ImmutableList<Field> fields;
+  private final Class<? extends Component> clazz;
+  private final Function<String, NamespacedKey> keyCreator;
+  private final ImmutableList<Field> fields;
 
 
   public ComponentTagType(Class<? extends Component> clazz,

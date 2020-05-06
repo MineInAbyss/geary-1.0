@@ -25,9 +25,9 @@ import org.bukkit.persistence.PersistentDataType;
  */
 public class ActionListener implements Listener {
 
-  private NamespacedKey componentKey;
-  private GearyEntityToPersistentDataConverter converter;
-  private GearyEntityFactory gearyEntityFactory;
+  private final NamespacedKey componentKey;
+  private final GearyEntityToPersistentDataConverter converter;
+  private final GearyEntityFactory gearyEntityFactory;
 
   public ActionListener(NamespacedKey componentKey,
       GearyEntityToPersistentDataConverter converter, GearyEntityFactory gearyEntityFactory) {

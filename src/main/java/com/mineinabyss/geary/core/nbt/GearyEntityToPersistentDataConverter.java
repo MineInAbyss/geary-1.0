@@ -20,12 +20,12 @@ import org.bukkit.persistence.PersistentDataType;
 public class GearyEntityToPersistentDataConverter {
 
   private final UUIDType uuidType;
-  private NamespacedKey componentsKey;
-  private NamespacedKey uuidKey;
-  private NamespacedKey versionKey;
-  private GearyEntityFactory gearyEntityFactory;
-  private List<GearyEntityMigration> migrations;
-  private ComponentArrayTagType componentArrayTagType;
+  private final NamespacedKey componentsKey;
+  private final NamespacedKey uuidKey;
+  private final NamespacedKey versionKey;
+  private final GearyEntityFactory gearyEntityFactory;
+  private final List<GearyEntityMigration> migrations;
+  private final ComponentArrayTagType componentArrayTagType;
 
   public GearyEntityToPersistentDataConverter(NamespacedKey componentsKey,
       NamespacedKey componentsDataKey,

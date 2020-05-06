@@ -41,11 +41,11 @@ public class GearyEntityFactory {
   public static class GearyEntityImpl implements GearyEntity {
 
     private ItemStack itemStack = null;
-    private PersistentDataHolder persistentDataHolder;
-    private long version;
-    private Map<Class<? extends Component>, Component> components;
-    private Map<String, PlaceholderComponent> placeholders;
-    private UUID uuid;
+    private final PersistentDataHolder persistentDataHolder;
+    private final long version;
+    private final Map<Class<? extends Component>, Component> components;
+    private final Map<String, PlaceholderComponent> placeholders;
+    private final UUID uuid;
     private Player player;
 
     private GearyEntityImpl(ItemStack itemStack, Player player, long version, UUID uuid) {

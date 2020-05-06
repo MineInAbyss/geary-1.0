@@ -27,14 +27,14 @@ import org.bukkit.plugin.Plugin;
 
 public class SimpleGearyEngine implements GearyEngine {
 
-  private Map<Class<? extends GearySystem>, GearySystem> initializingSystems;
-  private Map<Class<? extends Plugin>, Map<Class<? extends GearySystem>, GearySystem>> systems;
-  private Map<Class<? extends GearySystem>, GearySystem> cleanupSystems;
-  private NamespacedKey componentKey;
-  private GearyEntityToPersistentDataConverter converter;
+  private final Map<Class<? extends GearySystem>, GearySystem> initializingSystems;
+  private final Map<Class<? extends Plugin>, Map<Class<? extends GearySystem>, GearySystem>> systems;
+  private final Map<Class<? extends GearySystem>, GearySystem> cleanupSystems;
+  private final NamespacedKey componentKey;
+  private final GearyEntityToPersistentDataConverter converter;
   private boolean updateInProcess;
   private Map<UUID, GearyEntity> entities;
-  private Logger logger;
+  private final Logger logger;
 
   public SimpleGearyEngine(NamespacedKey componentKey,
       GearyEntityToPersistentDataConverter converter, Logger logger) {

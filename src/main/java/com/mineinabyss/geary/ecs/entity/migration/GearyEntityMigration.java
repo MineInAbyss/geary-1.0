@@ -10,9 +10,9 @@ import org.bukkit.persistence.PersistentDataType;
  */
 public abstract class GearyEntityMigration {
 
-    private NamespacedKey versionKey;
-    private long targetLessThan;
-    private long upgradeVersion;
+    private final NamespacedKey versionKey;
+    private final long targetLessThan;
+    private final long upgradeVersion;
 
     public GearyEntityMigration(NamespacedKey versionKey, long targetLessThan,
         long upgradeVersion) {

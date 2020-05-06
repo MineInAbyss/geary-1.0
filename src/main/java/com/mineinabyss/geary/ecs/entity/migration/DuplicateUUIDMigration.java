@@ -15,7 +15,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 public class DuplicateUUIDMigration extends GearyEntityMigration {
 
     private final UUIDType uuidType;
-    private NamespacedKey uuidKey;
+    private final NamespacedKey uuidKey;
 
     public DuplicateUUIDMigration(NamespacedKey versionKey, NamespacedKey uuidKey) {
         super(versionKey, 1, 1);

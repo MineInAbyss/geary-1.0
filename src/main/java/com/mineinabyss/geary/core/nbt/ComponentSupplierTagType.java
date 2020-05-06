@@ -11,8 +11,8 @@ import org.bukkit.persistence.PersistentDataType;
 public class ComponentSupplierTagType implements
     PersistentDataType<PersistentDataContainer, ComponentSupplier> {
 
-  private NamespacedKey componentsKey;
-  private ComponentArrayTagType componentArrayTagType;
+  private final NamespacedKey componentsKey;
+  private final ComponentArrayTagType componentArrayTagType;
 
   public ComponentSupplierTagType(NamespacedKey componentsKey,
       ComponentArrayTagType componentArrayTagType) {

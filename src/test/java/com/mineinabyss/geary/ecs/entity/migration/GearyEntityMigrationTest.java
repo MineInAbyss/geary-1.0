@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class GearyEntityMigrationTest {
 
-  private NamespacedKey versionKey = NamespacedKeyCreator.createKey("geary", "version");
+  private final NamespacedKey versionKey = NamespacedKeyCreator.createKey("geary", "version");
 
 
   @Test
