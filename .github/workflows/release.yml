@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
+
+jobs:
+  # Determine what version this release is and upload as an artifact
+  determine-release-version:
+    runs-on: ubuntu-latest
+    if: >-
+      (contains(github.event.pull_request.labels.*.name, 'major') ||
+      contains(github.event.pull_request.labels.*.name, 'minor') ||
+      contains(github.event.pull_request.labels.*.name, 'patch'))
+      && github.event.pull_request.merged == true
+    steps:
+      - name: Find change type
+        id: bump
+        uses: zwaldowski/match-label-action@v1
+        with:
+          allowed: major,minor,patch
+      - name: Get next version
+        uses: zwaldowski/semver-release-action@v2
+        id: next_version
+        with:
+          bump: ${{ steps.bump.outputs.match }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prefix: v
+          dry_run: true
+      - name: Create release version artifact
+        shell: bash
+        run: |
+          echo "${{ steps.next_version.outputs.version }}" > version.txt
+      - name: Upload release version artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: version
+          path: version.txt
+  # Build and test geary, then publish to the github packages repo
+  publish:
+    runs-on: ubuntu-latest
+    needs: [determine-release-version]
+    steps:
+      - name: Download release version artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: version
+      - shell: bash
+        id: extract_version
+        run: |
+          version=`cat version/version.txt`
+          echo "::set-output name=version::$version"
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - id: set-nms-version
+        run: echo ::set-output name=nms-version::1.15.1
+      # This is a NOOP since cacheing does not work on PR closes. Here for completeness.
+      - name: Cache NMS
+        id: cache-nms
+        uses: actions/cache@v1
+        with:
+          path: nms-build/.m2/repository/
+          key: ${{ runner.os }}-${{ steps.set-nms-version.outputs.nms-version }}-nms
+      - name: Build NMS
+        if: steps.cache-nms.outputs.cache-hit != 'true'
+        uses: derongan/nmsaction@v1
+        with:
+          rev: ${{ steps.set-nms-version.outputs.nms-version }}
+      - name: Install nms into m2
+        run: mkdir -p $HOME/.m2/repository && cp -a nms-build/.m2/repository/* $HOME/.m2/repository
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run tests
+        run: ./gradlew test
+      - name: Publish to GitHub Package Repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew -Pversion=${{ steps.extract_version.outputs.version }} publish
+  # Build and test geary and upload the jars as artifacts
+  jar:
+    runs-on: ubuntu-latest
+    needs: [determine-release-version]
+    steps:
+      - name: Download release version artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: version
+      - shell: bash
+        id: extract_version
+        run: |
+          version=`cat version/version.txt`
+          echo "::set-output name=version::$version"
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - id: set-nms-version
+        run: echo ::set-output name=nms-version::1.15.1
+      # This is a NOOP since cacheing does not work on PR closes. Here for completeness.
+      - name: Cache NMS
+        id: cache-nms
+        uses: actions/cache@v1
+        with:
+          path: nms-build/.m2/repository/
+          key: ${{ runner.os }}-${{ steps.set-nms-version.outputs.nms-version }}-nms
+      - name: Build NMS
+        if: steps.cache-nms.outputs.cache-hit != 'true'
+        uses: derongan/nmsaction@v1
+        with:
+          rev: ${{ steps.set-nms-version.outputs.nms-version }}
+      - name: Install nms into m2
+        run: mkdir -p $HOME/.m2/repository && cp -a nms-build/.m2/repository/* $HOME/.m2/repository
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run tests
+        run: ./gradlew test
+      - name: Build output jars
+        run: ./gradlew -Pversion=${{ steps.extract_version.outputs.version }} jar shadowJar
+      - name: Upload jars
+        uses: actions/upload-artifact@v2
+        with:
+          name: jars
+          path: build/libs/*.jar
+  # Create and tag a release, and add the jars to it
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [determine-release-version, jar]
+    steps:
+      - name: Download release version artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: version
+      - shell: bash
+        id: extract_version
+        run: |
+          version=`cat version/version.txt`
+          echo "::set-output name=version::$version"
+      - name: Download jars
+        uses: actions/download-artifact@v1
+        with:
+          name: jars
+      - name: Create GitHub Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: v${{ steps.extract_version.outputs.version }}
+          files: |
+            jars/*
